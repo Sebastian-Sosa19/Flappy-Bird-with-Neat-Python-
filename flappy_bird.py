@@ -5,7 +5,7 @@ import os
 import random
 pygame.font.init()
 
-GEN = 0
+GEN = 0				# gen variable for NEAT.
 
 WIN_WIDTH = 576		# main value for window width
 WIN_HEIGHT = 800	# main valie for window height
@@ -18,54 +18,59 @@ PIPE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs","pipe.
 BASE_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "base.png")))	# img sources for game	
 BG_IMG = pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bg.png")))		# img sources for game
 
-STAT_FONT = pygame.font.SysFont("comicsans",50)
+STAT_FONT = pygame.font.SysFont("comicsans",50)		# choosing the font for text display on screen.
 
 class Bird:
-	"""defining the Bird object"""
+	"""Class for all the Bird attributes in the game"""
 
 	IMGS = BIRD_IMGS # defining de source of bird images
 
-	MAX_ROTATION = 25
-	ROT_VEL = 20
-	ANIMATION_TIME = 5
+	MAX_ROTATION = 25				# max rotation the bird sprite will have.
+	ROT_VEL = 20					# velocity of bird sprite rotating,
+	ANIMATION_TIME = 5				# every sprite time on screen
 
 	def __init__(self, x, y):
-		self.x = x
-		self.y = y
-		self.tilt = 0
+		self.x = x 					# bird horizontal position 
+		self.y = y					# bird vertical position
+		self.tilt = 0				# tilt value for bird
 		self.tick_count = 0
-		self.vel = 0
-		self.height = self.y
-		self.img_count = 0
-		self.img = self.IMGS[0]
+		self.vel = 0				# bird speed
+		self.height = self.y		# bird initial height
+		self.img_count = 0			# number of actual sprite on screen
+		self.img = self.IMGS[0]		# first bird sprite to be shown
 
 	def jump(self):
-		self.vel = -10.5
+		""" Defines the bird Jump due to its high and velocity. """
+		self.vel = -10.5			# speed value for negative direction (upwards)
 		self.tick_count = 0
-		self.height = self.y
+		self.height = self.y		# bird vertical position
 
 	def move(self):
-		self.tick_count += 1
+		""" Defines the bird movement due its speed, and sprite rotation animation. """
+		self.tick_count += 1		# tick count adds 1 when moving
 
-		d = self.vel+self.tick_count + 1.5*self.tick_count**2
+		d = self.vel+self.tick_count + 1.5*self.tick_count**2	# phisyc formula for bird movement upwards
 
-		if d >=16:
+		if d >=16:					# d value cannot pass 16
 			d = 16
 
-		if d < 0:
+		if d < 0:					# d value only can be 2 when negative
 			d -= 2
 
-		self.y = self.y + d
+		self.y = self.y + d 		# change in the bird vertical position given by adding d value
+ 	
+		if d < 0 or self.y < self.height + 50:	# is d lower than 0 or is vertical position lower than height + 50
+			if self.tilt < self.MAX_ROTATION:	# if it is, we have to ask if the tilt is lower than the max rotation allowed
+				self.tilt = self.MAX_ROTATION	# if it is, set tilt to its max rotation
 
-		if d < 0 or self.y < self.height + 50:
-			if self.tilt < self.MAX_ROTATION:
-				self.tilt = self.MAX_ROTATION
+		else:									# d is neither lower than 0 or vertical position lower than height + 50
+			if self.tilt > -90:					# is the tilt greater than -90 ?
+				self.tilt -= self.ROT_VEL		# yes, let be tilt rot_vel - 1
 
-		else:
-			if self.tilt > -90:
-				self.tilt -= self.ROT_VEL
+
 
 	def draw(self, win):
+		""" Draws the bird on screen, given the window attribute. """
 		self.img_count += 1
 
 		if self.img_count <= self.ANIMATION_TIME:
@@ -93,6 +98,7 @@ class Bird:
 		return pygame.mask.from_surface(self.img)
 
 class Pipe:
+	""" This class defines the Pipes behavior in the game. """
 	GAP = 200
 	VEL = 5
 
@@ -111,18 +117,22 @@ class Pipe:
 		self.set_height()
 
 	def set_height(self):
+		""" Defines a random height for each generated pipe in the game, either in top or bottom of the screen. """
 		self.height = random.randrange(50,400)
 		self.top = self.height - self.PIPE_TOP.get_height()
 		self.bottom = self.height + self.GAP
 
 	def move(self):
+		""" Moves the pipes in the opposite direction the bird is moving. """
 		self.x -= self.VEL
 
 	def draw(self,win):
+		""" Draws the pipes on screen, on top or bottom. """
 		win.blit(self.PIPE_TOP, (self.x, self.top))
 		win.blit(self.PIPE_BOTTOM, (self.x, self.bottom))
 
 	def collide(self, bird):
+		""" This method configures the trigger when the bird and pipe pixels collide, so the bird loses the game. """
 		bird_mask = bird.get_mask()
 		top_mask = pygame.mask.from_surface(self.PIPE_TOP)
 		bottom_mask = pygame.mask.from_surface(self.PIPE_BOTTOM)
@@ -139,6 +149,7 @@ class Pipe:
 		return False
 
 class Base:
+	""" This class defines how the base bellow the bird will behavior. """
 	VEL = 5
 	WIDTH = BASE_IMG.get_width()
 	IMG = BASE_IMG
@@ -149,6 +160,9 @@ class Base:
 		self.x2 = self.WIDTH
 
 	def move(self):
+		""" This function moves the base bellow in the opposite horizontal speed the bird is moving.
+			Two bases are used so one can go after the first when this one goes out of screen in the left side, so basically this is a loop
+			that gives the illusion the ground is infinitely. """
 		self.x1 -= self.VEL
 		self.x2 -= self.VEL
 
@@ -159,11 +173,13 @@ class Base:
 			self.x2 = self.x1 + self.WIDTH
 
 	def draw(self, win):
+		""" Draws the base img on screen. """
 		win.blit(self.IMG, (self.x1, self.y))
 		win.blit(self.IMG, (self.x2, self.y))
 
 
 def draw_window(win, birds, pipes, base, score, gen):
+	""" This method generates the game screen with all the needed elements defined in previous classes. """
 	win.blit(BG_IMG, (0,0))
 	#bird.draw(win)
 	for pipe in pipes:
@@ -184,6 +200,7 @@ def draw_window(win, birds, pipes, base, score, gen):
 
 
 def main(genomes, config):
+	""" Main loop where the game runs. """
 	global GEN
 	GEN += 1
 	nets = []
@@ -275,7 +292,9 @@ def main(genomes, config):
 
 #main()
 
-def run(config_path):	
+def run(config_path):
+	""" Running method for NEAT module configuration, here all the needed parameters are given to neat config attribute.
+		Parameter values are given in config-feedforward.txt document, placed in the same directory as this file. """	
 	config = neat.config.Config(neat.DefaultGenome, 
 			neat.DefaultReproduction, 
 			neat.DefaultSpeciesSet,
@@ -291,6 +310,7 @@ def run(config_path):
 	winner = p.run(main,50)
 
 if __name__ == "__main__":
+	""" This if block reaches the config-feedforward.txt document for all the variable values neat needs to work. """
 	local_dir = os.path.dirname(__file__)
 	config_path = os.path.join(local_dir, "config-feedforward.txt")
 	run(config_path)
