@@ -1,7 +1,7 @@
 # Flappy-Bird-with-Neat-Python
  Learning to Code Flappy Bird and an AI to play it.
 
- This re-code belongs to youtuber Teach With Tim. 
+ This code original idea belongs to youtuber Teach With Tim. 
 
  This is his full playlist tutorial with all an explanation:
  	https://youtube.com/playlist?list=PLzMcBGfZo4-lwGZWXz5Qgta_YNX3_vLS2
@@ -10,7 +10,7 @@
   
   Pygame is a group of methods for building games, with a lot of render, movement, animation and game build.
   
-  NEAT is an artificial inteligente module. NEAT (NeuroEvolution of Augmenting Topologies) is an evolutionary algorithm that creates artificial neural networks.
+  NEAT is an artificial inteligence module. NEAT (NeuroEvolution of Augmenting Topologies) is an evolutionary algorithm that creates artificial neural networks.
   You can read a full documentation in the link bellow:
   https://neat-python.readthedocs.io/en/latest/config_file.html
   
